@@ -16,8 +16,11 @@ migratedown:
 test:
 	go test -v -cover ./...
 
+server:
+	go run main.go
+
 # use it in powershell
 sqlc:
 	docker run --rm -v ${pwd}:/src -w /src kjconroy/sqlc generate
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server
