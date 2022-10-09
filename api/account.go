@@ -2,7 +2,9 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	db "go-bank/db/sqlc"
+	"go-bank/token"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,7 +12,6 @@ import (
 )
 
 type CreateAccountRequest struct {
-	Owner    string `json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required,currency"`
 }
 
@@ -21,8 +22,10 @@ func (server *Server) CreateAccount(ctx *gin.Context) {
 		return
 	}
 
+	// a login user can only create account just belong for him/herself
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := db.CreateAccountParams{
-		Owner:    req.Owner,
+		Owner:    authPayload.Username,
 		Currency: req.Currency,
 		Balance:  0,
 	}
@@ -65,6 +68,14 @@ func (server *Server) getAccount(ctx *gin.Context) {
 		return
 	}
 
+	// Get account just belong to user owns
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if account.Owner != authPayload.Username {
+		err := errors.New("account doesnt belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, account)
 }
 
@@ -80,7 +91,10 @@ func (server *Server) listAccount(ctx *gin.Context) {
 		return
 	}
 
+	// loggin user just can list accounts that belong to him/her
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := db.ListAccountsParams{
+		Owner:  authPayload.Username,
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}
