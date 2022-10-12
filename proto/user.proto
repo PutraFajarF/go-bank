@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "go-bank/pb";
+
+// Define User Object using protocol buffer
+// Number 1 to 15 take only 1 byte to encode, bigger number require 2 or more bytes
+message User {
+  string username = 1;
+  string full_name = 2;
+  string email = 3;
+  google.protobuf.Timestamp password_change_at = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
