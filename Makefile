@@ -32,6 +32,7 @@ mock:
 sqlc:
 	docker run --rm -v ${pwd}:/src -w /src kjconroy/sqlc generate
 
+# generate go Code with protobuf 
 proto:
 	rm -f pb/*.go
 	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
